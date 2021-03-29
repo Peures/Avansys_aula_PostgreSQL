@@ -1,0 +1,181 @@
+DROP TABLE IF EXISTS ambulatorios, medicos, pacientes, consultas, funcionarios;
+CREATE TABLE ambulatorios(
+	id_a SERIAL NOT NULL,
+	andar NUMERIC(3) NOT NULL,
+	capacidade SMALLINT,
+	PRIMARY KEY (id_a)
+);
+
+CREATE TABLE medicos(
+	id_m SERIAL NOT NULL,
+	nome VARCHAR(40) NOT NULL,
+	idade SMALLINT NOT NULL,
+	especialidade CHAR(20),
+	CPF NUMERIC(11) UNIQUE,
+	cidade VARCHAR(30),
+	id_a_m INTEGER,
+	PRIMARY KEY (id_m),
+	CONSTRAINT fk_med_amb FOREIGN KEY (id_a_m) REFERENCES ambulatorios(id_a)
+);
+
+CREATE TABLE pacientes(
+	id_p SERIAL NOT NULL,
+	nome VARCHAR(40) NOT NULL,
+	idade SMALLINT NOT NULL,
+	CPF NUMERIC(11) UNIQUE,
+	cidade VARCHAR(30),
+	doenca VARCHAR(40) NOT NULL,
+	PRIMARY KEY (id_p)
+);
+
+CREATE TABLE funcionarios(
+	id_f SERIAL NOT NULL,
+	nome VARCHAR(40) NOT NULL,
+	idade SMALLINT NOT NULL,
+	CPF NUMERIC(11) UNIQUE,
+	cidade VARCHAR(30),
+	salario NUMERIC(10),
+	cargo VARCHAR(20),
+	PRIMARY KEY (id_f)
+);
+
+CREATE TABLE consultas(
+	id_m_c INTEGER,
+	id_p_c INTEGER,
+	dia DATE,
+	hora TIME,
+	PRIMARY KEY (id_m_c, dia, hora)
+);
+
+ALTER TABLE funcionarios
+ADD COLUMN id_a INTEGER,
+ADD CONSTRAINT fk_func_amb FOREIGN KEY (id_a) REFERENCES ambulatorios(id_a);
+
+INSERT INTO medicos (nome, idade, CPF) VALUES ('Raimundo', 30, 86261251517);
+INSERT INTO pacientes (nome, idade, doenca) VALUES ('Joaquim', 18, 'corona');
+
+DELETE FROM pacientes WHERE doenca = 'corona';
+
+ALTER TABLE funcionarios
+DROP COLUMN cargo,
+DROP COLUMN id_a;
+
+INSERT INTO ambulatorios(andar, capacidade) VALUES (1, 30);
+INSERT INTO ambulatorios(andar, capacidade) VALUES (1, 50);
+INSERT INTO ambulatorios(andar, capacidade) VALUES (2, 40);
+INSERT INTO ambulatorios(andar, capacidade) VALUES (2, 25);
+INSERT INTO ambulatorios(andar, capacidade) VALUES (2, 55);
+
+DELETE FROM medicos WHERE id_m = 1;
+ALTER SEQUENCE medicos_id_m_seq RESTART WITH 1;
+
+INSERT INTO medicos(nome, idade, especialidade, CPF, cidade, id_a_m) VALUES ('Joao', 40, 'ortopedia', 10000100000, 'Florianopolis', 1);
+INSERT INTO medicos(nome, idade, especialidade, CPF, cidade, id_a_m) VALUES ('Maria', 42, 'traumatologia', 10000110000, 'Blumenau', 2);
+INSERT INTO medicos(nome, idade, especialidade, CPF, cidade, id_a_m) VALUES ('Pedro', 51, 'pediatria', 11000100000, 'São José', 2);
+INSERT INTO medicos(nome, idade, especialidade, CPF, cidade) VALUES ('Carlos', 28, 'ortopedia', 11000110000, 'Joinville');
+INSERT INTO medicos(nome, idade, especialidade, CPF, cidade, id_a_m) VALUES ('Marcia', 33, 'neurologia', 11000111000, 'Biguacu', 3);
+
+ALTER SEQUENCE pacientes_id_p_seq RESTART WITH 1;
+
+INSERT INTO pacientes (nome, idade, cidade, CPF, doenca) VALUES ('Ana', 20, 'Florianopolis', 20000200000, 'Gripe');
+INSERT INTO pacientes (nome, idade, cidade, CPF, doenca) VALUES ('Paulo', 24, 'Palhoca', 20000220000, 'Fratura');
+INSERT INTO pacientes (nome, idade, cidade, CPF, doenca) VALUES ('Lucia', 30, 'Biguacu', 22000200000, 'Tendinite');
+INSERT INTO pacientes (nome, idade, cidade, CPF, doenca) VALUES ('Carlos', 28, 'Joinville', 11000110000, 'Sarampo');
+
+INSERT INTO funcionarios (nome, idade, cidade, salario, CPF) VALUES ('Rita', 32, 'São José', 1200, 20000100000);
+INSERT INTO funcionarios (nome, idade, cidade, salario, CPF) VALUES ('Maria', 55, 'Palhoca', 1220, 30000110000);
+INSERT INTO funcionarios (nome, idade, cidade, salario, CPF) VALUES ('Caio', 45, 'Florianopolis', 1100, 41000100000);
+INSERT INTO funcionarios (nome, idade, cidade, salario, CPF) VALUES ('Carlos', 44, 'Florianopolis', 1200, 51000100000);
+INSERT INTO funcionarios (nome, idade, cidade, salario, CPF) VALUES ('Paula', 33, 'Florianopolis', 2500, 61000111000);
+
+INSERT INTO consultas (id_m_c, id_p_c, dia, hora) VALUES (1, 1, '2006-06-12', '14:00:00');
+INSERT INTO consultas (id_m_c, id_p_c, dia, hora) VALUES (1, 4, '2006-06-13', '10:00:00');
+INSERT INTO consultas (id_m_c, id_p_c, dia, hora) VALUES (2, 1, '2006-06-13', '9:00:00');
+INSERT INTO consultas (id_m_c, id_p_c, dia, hora) VALUES (2, 2, '2006-06-13', '11:00:00');
+INSERT INTO consultas (id_m_c, id_p_c, dia, hora) VALUES (2, 3, '2006-06-14', '14:00:00');
+INSERT INTO consultas (id_m_c, id_p_c, dia, hora) VALUES (2, 4, '2006-06-14', '17:00:00');
+INSERT INTO consultas (id_m_c, id_p_c, dia, hora) VALUES (3, 1, '2006-06-19', '18:00:00');
+INSERT INTO consultas (id_m_c, id_p_c, dia, hora) VALUES (3, 3, '2006-06-12', '10:00:00');
+INSERT INTO consultas (id_m_c, id_p_c, dia, hora) VALUES (3, 4, '2006-06-19', '13:00:00');
+INSERT INTO consultas (id_m_c, id_p_c, dia, hora) VALUES (4, 4, '2006-06-20', '13:00:00');
+INSERT INTO consultas (id_m_c, id_p_c, dia, hora) VALUES (4, 4, '2006-06-22', '19:30:00');
+
+/*Questão 1*/
+SELECT nome, CPF 
+FROM medicos 
+WHERE idade < 40 OR especialidade != 'traumatologia';
+
+/*Questão 2*/
+SELECT id_m_c, id_p_c, dia, hora 
+FROM consultas
+WHERE dia >= '2006-06-20';
+
+/*Questão 3*/
+SELECT nome, idade 
+FROM pacientes
+WHERE cidade != 'Florianopolis';
+
+/*Questão 4*/
+SELECT hora 
+FROM consultas 
+WHERE dia <= '2006-06-13' OR dia > '2006-06-20';
+
+/*Questão 5*/
+SELECT nome, (idade*12) 
+AS IdadeM
+FROM pacientes;
+
+/*Questão 6*/
+SELECT cidade FROM funcionarios
+UNION
+SELECT cidade FROM funcionarios;
+
+/*Questão 7*/
+SELECT MIN(salario), MAX(salario)
+FROM funcionarios
+WHERE cidade = 'Florianopolis';
+
+/*Questão 10*/
+SELECT MAX(hora) 
+FROM consultas
+WHERE dia = '2006-06-13';
+
+/*Questão 11*/
+/*Jeito 1*/
+SELECT (SUM(idade)/COUNT(id_m)) AS IdadeM, 
+COUNT(DISTINCT id_a_m) AS QntAmb
+FROM medicos;
+/*Jeito 2*/
+SELECT AVG(idade)::numeric(10,2) , 
+COUNT(DISTINCT id_a_m) AS QntAmb
+FROM medicos;
+
+/*Questão 12*/
+SELECT id_f, nome, salario, (salario-(salario*0.2)) AS SalarioL
+FROM funcionarios;
+
+/*Questão 13*/
+SELECT nome
+FROM funcionarios
+WHERE nome LIKE '%a';
+
+/*Questão 14*/
+ALTER TABLE funcionarios
+ALTER COLUMN CPF TYPE VARCHAR(11);
+
+SELECT nome, CPF
+FROM funcionarios
+WHERE CPF NOT LIKE '%00000%';
+
+/*Questão 15*/
+SELECT nome, especialidade
+FROM medicos
+WHERE nome LIKE '_o%' AND nome LIKE '%o';
+
+/*Questão 16*/
+SELECT id_p, nome
+FROM pacientes
+WHERE idade > 25  AND doenca = 'Tendinite' 
+OR idade > 25  AND doenca = 'Fratura' 
+OR idade > 25  AND doenca = 'Gripe' 
+OR idade > 25  AND doenca = 'Sarampo';
