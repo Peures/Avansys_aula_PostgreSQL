@@ -1,0 +1,136 @@
+/*ESQUECI DE FAZER ONTEM*/
+ALTER TABLE funcionarios
+ADD COLUMN id_a_f INTEGER;
+
+/*Atividade 1*/
+SELECT med.nome, pac.nome
+FROM consultas 
+INNER JOIN medicos AS med
+ON med.id_m = consultas.id_m_c
+INNER JOIN pacientes AS pac
+ON pac.id_p = consultas.id_p_c
+WHERE med.nome = pac.nome
+UNION
+SELECT med.nome, pac.nome
+FROM consultas 
+INNER JOIN medicos AS med
+ON med.id_m = consultas.id_m_c
+INNER JOIN pacientes AS pac
+ON pac.id_p = consultas.id_p_c
+WHERE med.nome = pac.nome;
+
+/*Atividade 2*/
+SELECT med.id_m, func.id_f, med.nome, func.nome
+FROM medicos AS med
+JOIN funcionarios AS func
+ON med.cidade = func.cidade
+WHERE med.cidade = func.cidade;
+
+/*Atividade 3*/
+SELECT pac.id_p, pac.nome
+FROM consultas AS con
+INNER JOIN pacientes AS pac
+ON pac.id_p = con.id_p_c
+WHERE con.hora > '14:00';
+
+/*Atividade 4*/
+SELECT amb.id_a, amb.andar
+FROM ambulatorios AS amb
+INNER JOIN medicos AS med
+ON amb.id_a = med.id_a_m
+WHERE med.especialidade = 'ortopedia';
+
+/*Atividade 5*/
+SELECT pac.nome, pac.CPF
+FROM consultas AS con
+INNER JOIN pacientes AS pac
+ON con.id_p_c = pac.id_p
+WHERE dia > '2006/06/13' AND dia < '2006/06/17';
+
+/*Atividade 6*/
+SELECT med.nome, med.idade 
+FROM consultas AS con
+INNER JOIN medicos AS med
+ON con.id_m_c = med.id_m
+INNER JOIN pacientes AS pac
+ON con.id_p_c = pac.id_p
+WHERE pac.nome = 'Ana';
+
+/*Atividade 7*/
+SELECT med.id_m, med.nome 
+FROM medicos AS med
+INNER JOIN ambulatorios AS amb
+ON med.id_a_m = amb.id_a
+INNER JOIN consultas AS con
+ON med.id_m = con.id_m_c
+WHERE amb.id_a = (
+	SELECT amb.id_a 
+	FROM medicos AS med
+	INNER JOIN ambulatorios AS amb 
+	ON med.id_a_m = amb.id_a
+	WHERE med.nome = 'Pedro'
+) AND med.nome != 'Pedro' AND con.dia = '2006/06/14'
+UNION
+SELECT med.id_m, med.nome 
+FROM medicos AS med
+INNER JOIN ambulatorios AS amb
+ON med.id_a_m = amb.id_a
+INNER JOIN consultas AS con
+ON med.id_m = con.id_m_c
+WHERE amb.id_a = (
+	SELECT amb.id_a 
+	FROM medicos AS med
+	INNER JOIN ambulatorios AS amb 
+	ON med.id_a_m = amb.id_a
+	WHERE med.nome = 'Pedro'
+) AND med.nome != 'Pedro' AND con.dia = '2006/06/14';
+
+/*Atividade 8*/
+/*Jeito 1*/
+SELECT pac.nome, pac.CPF, pac.idade
+FROM consultas AS con
+INNER JOIN pacientes AS pac
+ON pac.id_p = con.id_p_c
+INNER JOIN medicos AS med
+ON med.id_m = con.id_m_c
+WHERE med.especialidade = 'ortopedia' AND con.dia < '2006/06/16';
+/*Jeito 2*/
+SELECT pac.nome, pac.CPF, pac.idade
+FROM consultas AS con
+INNER JOIN pacientes AS pac
+ON pac.id_p = con.id_p_c
+INNER JOIN medicos AS med
+ON med.id_m = con.id_m_c
+WHERE med.especialidade = 'ortopedia' AND EXTRACT(DAY FROM con.dia) < 16;
+
+/*Atividade 9*/
+SELECT nome, salario 
+FROM funcionarios
+WHERE cidade = (
+	SELECT cidade
+	FROM funcionarios
+	WHERE nome = 'Carlos'
+) AND salario > (
+	SELECT salario
+	FROM funcionarios
+	WHERE nome = 'Carlos'
+);
+
+/*Atividade 10*/
+SELECT amb.id_a, amb.andar, amb.capacidade, med.id_m, med.nome
+FROM medicos AS med
+INNER JOIN ambulatorios AS amb
+ON med.id_a_m = amb.id_a
+INNER JOIN consultas AS con
+ON med.id_m = con.id_m_c
+WHERE med.id_a_m IS NOT NULL;
+
+/*Atividade 11*/
+SELECT med.nome, med.CPF, pac.nome, pac.CPF, con.dia
+FROM consultas AS con
+INNER JOIN medicos AS med
+ON med.id_m = con.id_m_c
+INNER JOIN pacientes AS pac
+ON pac.id_p = con.id_p_c
+WHERE con.id_m_c IS NOT NULL;
+
