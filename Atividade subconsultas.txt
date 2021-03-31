@@ -1,0 +1,180 @@
+/*SUBCONSULTAS IN*/
+/*Atividade 1*/
+SELECT DISTINCT med.nome, med.CPF
+FROM consultas AS con
+INNER JOIN medicos AS med
+ON med.id_m = con.id_m_c
+INNER JOIN pacientes AS pac
+ON pac.id_p = con.id_p_c
+WHERE med.CPF IN(
+	SELECT CPF 
+	FROM pacientes) AND med.nome IN (
+		SELECT nome
+		FROM pacientes);
+
+/*Atividade 2*/
+SELECT pac.id_p, pac.nome 
+FROM consultas AS con
+INNER JOIN pacientes AS pac
+ON pac.id_p = con.id_p_c
+WHERE pac.id_p IN (
+	SELECT con.id_p_c 
+	FROM consultas AS con
+	WHERE con.hora > '14:00');
+
+/*Atividade 3*/
+SELECT med.nome, med.idade
+FROM consultas AS con
+INNER JOIN medicos AS med
+ON med.id_m = con.id_m_c
+INNER JOIN pacientes AS pac
+ON pac.id_p = con.id_p_c
+WHERE pac.nome IN (
+	SELECT pac.nome
+	FROM consultas AS con
+	INNER JOIN pacientes AS pac
+	ON pac.id_p = con.id_p_c
+	WHERE pac.nome = 'Ana');
+	
+/*Atividade 4*/
+SELECT DISTINCT amb.id_a, amb.andar
+FROM medicos AS med
+INNER JOIN ambulatorios AS amb
+ON med.id_a_m = amb.id_a
+INNER JOIN consultas AS con
+ON med.id_m = con.id_m_c
+WHERE NOT EXISTS(
+SELECT con.id_m_c 
+FROM consultas AS con
+WHERE med.id_m = con.id_m_c); 
+
+/*Atividade 5*/
+SELECT pac.nome, pac.CPF, pac.idade
+FROM consultas AS con
+INNER JOIN pacientes AS pac
+ON pac.id_p = con.id_p_c
+WHERE pac.id_p IN(
+	SELECT pac.id_p
+	FROM consultas AS con
+	WHERE EXTRACT(DAY from con.dia)<16);
+	
+/*SUBCONSULTAS ANY/ALL*/
+/*Atividade 1*/
+SELECT id_a, andar
+FROM ambulatorios
+WHERE capacidade <= ALL(
+	SELECT capacidade
+	FROM ambulatorios);
+
+/*Atividade 2*/
+SELECT med.idade, med.nome
+FROM consultas AS con
+INNER JOIN medicos AS med
+ON med.id_m = con.id_m_c
+INNER JOIN pacientes AS pac
+ON pac.id_p = con.id_p_c
+WHERE med.id_m = ANY(
+	SELECT con.id_m_c
+	FROM consultas AS con
+	WHERE pac.nome = 'Ana');
+
+/*Atividade 3*/
+SELECT nome, idade
+FROM medicos
+WHERE idade <= ALL(
+	SELECT idade
+	FROM medicos);
+	
+/*Atividade 4*/
+SELECT DISTINCT pac.nome, pac.CPF
+FROM consultas AS con
+INNER JOIN pacientes AS pac
+ON pac.id_p = con.id_p_c
+WHERE con.hora <= ALL(
+	SELECT hora
+	FROM consultas AS con
+	WHERE dia < '2006/11/12');
+	
+/*Atividade 5*/
+SELECT DISTINCT med.nome, med.CPF 
+FROM ambulatorios AS amb
+INNER JOIN medicos AS med
+ON med.id_a_m = amb.id_a
+WHERE NOT IN (
+	SELECT med.id_m
+	FROM medicos AS med
+	INNER JOIN ambulatorios AS amb
+	ON amb.id_a = med.id_a_m
+	WHERE amb.capacidade >= ALL(
+		SELECT capacidade
+		FROM ambulatorios
+		WHERE andar = 2));
+		
+/*SUBCONSULTAS COM EXISTS*/
+/*Atividade 1*/
+SELECT DISTINCT med.nome, med.CPF 
+FROM consultas AS con
+INNER JOIN medicos AS med
+ON med.id_m = con.id_m_c
+INNER JOIN pacientes AS  pac
+ON pac.id_p = con.id_p_c
+WHERE EXISTS (
+	SELECT pac.nome, pac.CPF
+	FROM consultas);
+
+/*Atividade 2*/
+SELECT DISTINCT med.nome, med.idade
+FROM consultas AS con
+INNER JOIN medicos AS med
+ON med.id_m = con.id_m_c
+INNER JOIN pacientes AS pac
+ON pac.id_p = con.id_p_c
+WHERE EXISTS (
+	SELECT med.nome, med.idade
+	FROM consultas AS con
+	INNER JOIN medicos AS med
+	ON med.id_m = con.id_m_c
+	WHERE pac.nome = 'Ana');
+
+/*Atividade 3*/
+SELECT id_a
+FROM ambulatorios 
+WHERE EXISTS (
+	SELECT capacidade
+	FROM ambulatorios
+	WHERE capacidade >= ALL(
+		SELECT capacidade
+		FROM ambulatorios))
+	AND capacidade >= ALL(
+		SELECT capacidade
+		FROM ambulatorios);
+		
+/*Atividade 4*/
+SELECT med.nome, med.CPF 
+FROM consultas AS con
+INNER JOIN medicos AS med
+ON med.id_m = con.id_m_c
+INNER JOIN pacientes AS pac
+ON pac.id_p = con.id_p_c
+WHERE EXISTS(
+	SELECT con.id_m_c
+	FROM consultas AS con
+	WHERE con.id_p_c = ALL(
+		SELECT con.id_p_c
+		FROM consultas AS con));
+	
+/*Atividade 5*/
+SELECT DISTINCT med.nome, med.CPF
+FROM consultas AS con
+INNER JOIN medicos AS med
+ON med.id_m = con.id_m_c
+INNER JOIN pacientes AS pac
+ON pac.id_p = con.id_p_c
+WHERE EXISTS(
+	SELECT med.id_m
+	FROM consultas AS con
+	WHERE med.especialidade = 'ortopedia'
+	AND con.id_p_c = ALL(
+		SELECT pac.id_p
+		FROM consultas
+		WHERE pac.cidade = 'Florianopolis'));
