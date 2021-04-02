@@ -1,0 +1,145 @@
+/*Atividade subconsultas FROM*/
+
+/*Atividade 1*/
+SELECT * FROM (
+				SELECT * FROM consultas c
+				INNER JOIN medicos m
+				ON m.id_m = c.id_m_c
+				WHERE m.nome = 'Maria')
+AS consulta;
+
+/*Atividade 2*/
+SELECT *
+FROM (SELECT p2.nome, p2.id_p 
+	FROM consultas c2
+	INNER JOIN pacientes p2
+	ON p2.id_p = c2.id_p_c
+	WHERE c2.hora > '14:00')
+AS consulta;
+
+/*Atividade 3*/
+SELECT * FROM (
+	SELECT p2.nome, p2.cidade
+	FROM consultas c2
+	INNER JOIN pacientes p2
+	ON p2.id_p = c2.id_p_c
+	INNER JOIN medicos m2
+	ON m2.id_m = c2.id_m_c
+	WHERE m2.especialidade = 'ortopedia')
+	AS consulta;
+
+/*Atividade 4*/
+SELECT * FROM (
+	SELECT p2.nome, p2.CPF 
+	FROM consultas c2
+	INNER JOIN pacientes p2
+	ON p2.id_p = c2.id_p_c
+	WHERE NOT EXISTS(
+		SELECT p2.nome, p2.cpf
+		FROM consultas c2
+		INNER JOIN medicos m2
+		ON m2.id_m = c2.id_m_c
+		WHERE m2.nome = 'João'))
+AS consulta;
+
+/*Atividades order by/ group by*/
+/*Atividade 1*/
+SELECT * FROM funcionarios f 
+ORDER BY salario DESC, idade ASC
+LIMIT 3;
+
+/*Atividade 2*/
+SELECT m.nome, a.id_a, a.andar FROM medicos m
+INNER JOIN ambulatorios a 
+ON a.id_a = m.id_a_m 
+ORDER BY a.id_a;
+
+/*Atividade 3*/
+SELECT m.nome, p.nome
+FROM consultas c
+INNER JOIN medicos m
+ON m.id_m = c.id_m_c 
+INNER JOIN pacientes p
+ON p.id_p = c.id_p_c 
+WHERE EXISTS (
+	SELECT m.nome, p.nome
+	FROM consultas c2)
+ORDER BY c.dia , c.hora;
+
+/*Atividade 4*/
+SELECT idade, count(idade) AS nidade
+FROM medicos m
+GROUP BY idade 
+HAVING count(idade) > 1;
+
+/*Atividade 5*/
+SELECT dia, count(hora) AS nhoras
+FROM consultas c 
+WHERE hora > '12:00'
+GROUP BY dia;
+
+/*Atividade 6*/
+SELECT andar, avg(capacidade) 
+FROM ambulatorios a 
+WHERE EXISTS (
+	SELECT id_a FROM ambulatorios a2)
+GROUP BY andar;
+
+/*Atividade 7*/
+SELECT DISTINCT a.andar
+FROM ambulatorios a
+INNER JOIN (SELECT a.andar AS tandar, avg(a.capacidade) AS cpct FROM ambulatorios a GROUP BY a.andar) AS tabela
+ON tabela.tandar = a.andar 
+WHERE tabela.cpct >= 40
+GROUP BY a.andar;
+
+/*Atividade 8*/
+SELECT DISTINCT m.nome
+FROM consultas c 
+INNER JOIN medicos m
+ON m.id_m = c.id_m_c 
+INNER JOIN (SELECT c.id_m_c AS id_m_c, count(id_m_c) AS nid_m_c FROM consultas c GROUP BY c.id_m_c) AS tabela
+ON tabela.id_m_c = c.id_m_c 
+WHERE tabela.nid_m_c > 1;
+
+
+/*Atualizações*/
+/*Atividade 1*/
+UPDATE consultas AS c
+SET hora = '17:00'
+FROM pacientes AS p
+WHERE p.id_p = c.id_p_c
+AND p.nome = 'Ana';
+
+/*Atividade 2*/
+DELETE FROM pacientes 
+WHERE id_p NOT IN (SELECT id_p_c FROM consultas);
+
+/*Atividade 3*/
+UPDATE consultas AS c
+SET dia = '21-11-2006'
+WHERE id_m_c IN (SELECT id_m FROM medicos WHERE nome = 'Pedro')
+AND hora < '12:00';
+
+/*Atividade 4*/
+UPDATE ambulatorios AS a
+SET andar = (SELECT andar FROM ambulatorios WHERE id_a = 1),
+capacidade = (2*(SELECT capacidade FROM ambulatorios WHERE capacidade >= ALL(SELECT capacidade FROM ambulatorios)))
+WHERE a.id_a = 4;
+
+/*Atividade 5*/
+ALTER TABLE medicos 
+ALTER COLUMN cpf TYPE varchar(11);
+
+INSERT INTO medicos (nome, idade, cidade, cpf, especialidade, id_a_m) 
+VALUES (
+(SELECT nome FROM funcionarios WHERE nome = 'Caio'), 
+(SELECT idade FROM funcionarios WHERE nome = 'Caio'), 
+(SELECT cidade FROM funcionarios WHERE nome = 'Caio'), 
+(SELECT cpf FROM funcionarios WHERE nome = 'Caio'), 
+(SELECT especialidade FROM medicos WHERE nome = 'Maria'),
+(SELECT id_a_m FROM medicos WHERE nome = 'Maria'));
+
+
+
+
